@@ -8,13 +8,23 @@ node node::operator=(const node& another)
 }
 void node::print(node* root) const
 {
+	if (root == NULL)
+	{
+		return;
+	}
+	print(root->left);
+	cout << root->data << ", ";
+	print(root->right);
 }
 
 void node::clear(node*& root)
 {
-	if (root->left) clear(root->left);
-	if (root->right) clear(root->right);
-	root = NULL;
+	if (root)
+	{
+		if (root->left) clear(root->left);
+		if (root->right) clear(root->right);
+		root = NULL;
+	}
 }
 
 Set::Set()
@@ -24,39 +34,61 @@ Set::Set()
 
 bool Set::find(int key) const
 {
-	return true;
+	if (!root) return false;
+	node* tmproot = root;
+	while (tmproot)
+	{
+		if (key > tmproot->data)
+		{
+			tmproot = tmproot->right;
+		}
+		else if (key < tmproot->data)
+		{
+			tmproot = tmproot->left;
+		}
+		else if (key == tmproot->data) return true;
+	}
+	return false;
 }
 
 bool Set::insert(int key)
 {
-	node* tmp_root = root;
-	while (tmp_root)
+	if (!root)
 	{
-		if (tmp_root->data > key)
-		{
-			if (tmp_root->left == NULL)
-			{
-				tmp_root->left = new node;
-				tmp_root = tmp_root->left;
-				break;
-			}
-			else tmp_root = tmp_root->left;
-		}
-		else if (tmp_root->data < key)
-		{
-			if (tmp_root->right == NULL)
-			{
-				tmp_root->right = new node;
-				tmp_root = tmp_root->right;
-				break;
-			}
-			else tmp_root = tmp_root->right;
-		}
-		else if (tmp_root->data == key) return false;
+		root = new node;
+		root->data = key;
+		root->right = NULL;
+		root->left = NULL;
+		return true;
 	}
-	tmp_root->data = key;
-	tmp_root->right = NULL;
-	tmp_root->left = NULL;
+	node* tmproot = root;
+	while (tmproot)
+	{
+		if (tmproot->data > key)
+		{
+			if (tmproot->left == NULL)
+			{
+				tmproot->left = new node;
+				tmproot = tmproot->left;
+				break;
+			}
+			else tmproot = tmproot->left;
+		}
+		else if (tmproot->data < key)
+		{
+			if (tmproot->right == NULL)
+			{
+				tmproot->right = new node;
+				tmproot = tmproot->right;
+				break;
+			}
+			else tmproot = tmproot->right;
+		}
+		else if (tmproot->data == key) return false;
+	}
+	tmproot->data = key;
+	tmproot->right = NULL;
+	tmproot->left = NULL;
 	return true;
 }
 
@@ -73,7 +105,56 @@ std::ostream& operator<<(std::ostream& out, Set& s)
 
 bool Set::erase(int key)
 {
-	return true;
+	node* tmproot = root, * parent = NULL;
+	while (tmproot)
+	{
+		if (tmproot->data > key)
+		{
+			parent = tmproot;
+			tmproot = tmproot->left;
+		}
+		else if (tmproot->data < key)
+		{
+			parent = tmproot;
+			tmproot = tmproot->right;
+		}
+		else if (tmproot->data == key) break;
+	}
+	if (!tmproot) return false;
+	if (!tmproot->right && !tmproot->left)
+	{
+		if (parent && (parent->data > tmproot->data)) parent->left = NULL;
+		else if (parent && (parent->data < tmproot->data)) parent->right = NULL;
+		else if (tmproot == root) root = NULL;
+		delete tmproot;
+		return true;
+	}
+	else if (!tmproot->left)
+	{
+		if (parent && (parent->data > tmproot->data)) parent->left = tmproot->right;
+		else if (parent && (parent->data < tmproot->data)) parent->right = tmproot->right;
+		else if (tmproot == root) root = root->right;
+		delete tmproot;
+		return true;
+	}
+	else if (!tmproot->right)
+	{
+		if (parent && (parent->data > tmproot->data)) parent->left = tmproot->left;
+		else if (parent && (parent->data < tmproot->data)) parent->right = tmproot->left;
+		else if (tmproot == root) root = root->left;
+		delete tmproot;
+		return true;
+	}
+	else
+	{
+		node* ernode = tmproot->right;
+		while (ernode->left)
+			ernode = ernode->left;
+		int value = ernode->data;
+		erase(ernode->data);
+		tmproot->data = value;
+		return true;
+	}
 }
 
 void Set::clear()
