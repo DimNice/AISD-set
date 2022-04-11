@@ -37,8 +37,9 @@ int main()
 			cout << endl;
 			break;
 		case 0:
-			system("cls");
-			break;
+			
+				system("cls");
+				break;
 		}
 	}
 	return 0;
